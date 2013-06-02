@@ -1,3 +1,13 @@
+###
+CropZoom v1.3
+CoffeeScript version
+Release Date: June 1st, 2013
+
+LICENSE: Dual licensed under the MIT || GPL Version 2 licenses.
+
+New Author: Trevor Bortins (See comments for original authors)
+###
+
 #
 # CropZoom v1.2
 # Release Date: April 17, 2010
