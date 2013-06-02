@@ -11,14 +11,15 @@
 
 
       limitBounds = (ui) ->
-        getData("image").posY = 0  if ui.position.top > 0
-        getData("image").posX = 0  if ui.position.left > 0
+        imageData = getData 'image'
+        imageData.posY = 0  if ui.position.top > 0
+        imageData.posX = 0  if ui.position.left > 0
 
-        bottom = -(getData("image").h - ui.helper.parent().parent().height())
-        right = -(getData("image").w - ui.helper.parent().parent().width())
+        bottom = -(imageData.h - ui.helper.parent().parent().height())
+        right = -(imageData.w - ui.helper.parent().parent().width())
 
-        getData("image").posY = bottom  if ui.position.top < bottom
-        getData("image").posX = right  if ui.position.left < right
+        imageData.posY = bottom  if ui.position.top < bottom
+        imageData.posX = right  if ui.position.left < right
         calculateTranslationAndRotation()
 
 
@@ -28,57 +29,62 @@
 
 
       calculateFactor = ->
-        getData("image").scaleX = ($options.width / getData("image").w)
-        getData("image").scaleY = ($options.height / getData("image").h)
+        imageData = getData 'image'
+        imageData.scaleX = ($options.width / imageData.w)
+        imageData.scaleY = ($options.height / imageData.h)
 
 
       getCorrectSizes = ->
+        imageData = getData 'image'
+
         if $options.image.startZoom != 0
           zoomInPx_width = (($options.image.width * Math.abs($options.image.startZoom)) / 100)
           zoomInPx_height = (($options.image.height * Math.abs($options.image.startZoom)) / 100)
-          getData("image").h = zoomInPx_height
-          getData("image").w = zoomInPx_width
+          imageData.h = zoomInPx_height
+          imageData.w = zoomInPx_width
 
           #Checking if the position was set before
-          if getData("image").posY != 0 && getData("image").posX != 0
+          if imageData.posY != 0 && imageData.posX != 0
 
-            if getData("image").h > $options.height
-              getData("image").posY = Math.abs(($options.height / 2) - (getData("image").h / 2))
+            if imageData.h > $options.height
+              imageData.posY = Math.abs(($options.height / 2) - (imageData.h / 2))
             else
-              getData("image").posY = (($options.height / 2) - (getData("image").h / 2))
+              imageData.posY = (($options.height / 2) - (imageData.h / 2))
 
-            if getData("image").w > $options.width
-              getData("image").posX = Math.abs(($options.width / 2) - (getData("image").w / 2))
+            if imageData.w > $options.width
+              imageData.posX = Math.abs(($options.width / 2) - (imageData.w / 2))
             else
-              getData("image").posX = (($options.width / 2) - (getData("image").w / 2))
+              imageData.posX = (($options.width / 2) - (imageData.w / 2))
 
         else
-          scaleX = getData("image").scaleX
-          scaleY = getData("image").scaleY
+          scaleX = imageData.scaleX
+          scaleY = imageData.scaleY
 
           if scaleY < scaleX
-            getData("image").h = $options.height
-            getData("image").w = Math.round(getData("image").w * scaleY)
+            imageData.h = $options.height
+            imageData.w = Math.round(imageData.w * scaleY)
           else
-            getData("image").h = Math.round(getData("image").h * scaleX)
-            getData("image").w = $options.width
+            imageData.h = Math.round(imageData.h * scaleX)
+            imageData.w = $options.width
 
         # Disable snap to container if == little
-        $options.image.snapToContainer = false  if getData("image").w < $options.width && getData("image").h < $options.height
+        $options.image.snapToContainer = false  if imageData.w < $options.width && imageData.h < $options.height
         calculateTranslationAndRotation()
 
 
       calculateTranslationAndRotation = ->
         $ ->
+          imageData = getData 'image'
           adjustingSizesInRotation()
-          rotation = "rotate(" + getData("image").rotation + "deg)"
+          rotation = "rotate(" + imageData.rotation + "deg)"
+
           $($image).css
             transform: rotation
             "-webkit-transform": rotation
             "-ms-transform": rotation
             msTransform: rotation
-            top: getData("image").posY
-            left: getData("image").posX
+            top: imageData.posY
+            left: imageData.posX
 
 
       createRotationButtons = ->
@@ -95,15 +101,20 @@
         else
           $counterClockwiseButton = $("<div>").attr("id", "counterClockwiseButton")
 
+        buttons = $([$clockwiseButton[0], $counterClockwiseButton[0]])
+        buttons.css
+          cursor: 'pointer'
+
         handleButtonClick = (event, ui) ->
           angle = 0
           rotation = 0
           direction = event.currentTarget.id
+          imageData = getData 'image'
 
           if direction.search("counter") >= 0
-            angle = getData("image").rotation - 90
+            angle = imageData.rotation - 90
           else
-            angle = getData("image").rotation + 90
+            angle = imageData.rotation + 90
 
           if angle >= 360
             rotation = angle - 360
@@ -112,12 +123,13 @@
           else
             rotation = angle
 
-          getData("image").rotation = rotation
+          imageData.rotation = rotation
           calculateTranslationAndRotation()
 
           if $options.image.onRotate != null
-            $options.image.onRotate $clockwiseButton, getData("image").rotation
-            $options.image.onRotate $counterClockwiseButton, getData("image").rotation
+            $options.image.onRotate $clockwiseButton, imageData.rotation
+            $options.image.onRotate $counterClockwiseButton, imageData.rotation
+
 
         $clockwiseButton.click handleButtonClick
         $counterClockwiseButton.click handleButtonClick
@@ -153,12 +165,15 @@
           orientation = "horizontal"
           value = $options.image.rotation
 
+
         handleRotationSlide = (event, ui) ->
-          getData("image").rotation = ((if value == 360 then Math.abs(360 - ui.value) else Math.abs(ui.value)))
+          imageData = getData 'image'
+          imageData.rotation = ((if value == 360 then Math.abs(360 - ui.value) else Math.abs(ui.value)))
 
           calculateTranslationAndRotation()
 
-          $options.image.onRotate $slider, getData("image").rotation  if $options.image.onRotate != null
+          $options.image.onRotate $slider, imageData.rotation  if $options.image.onRotate != null
+
 
         $slider.slider
           orientation: orientation
@@ -207,9 +222,10 @@
         $slider = $("<div>").attr("id", "zoomSlider")
 
         # Apply Slider
+        imageData = getData 'image'
         $slider.slider
           orientation: ((if $options.expose.zoomElement != "" then $options.expose.slidersOrientation else "vertical"))
-          value: ((if $options.image.startZoom != 0 then $options.image.startZoom else getPercentOfZoom(getData("image"))))
+          value: ((if $options.image.startZoom != 0 then $options.image.startZoom else getPercentOfZoom(imageData)))
           min: ((if $options.image.useStartZoomAsMinZoom then $options.image.startZoom else $options.image.minZoom))
           max: $options.image.maxZoom
           step: ((if ($options.zoomSteps > $options.image.maxZoom || $options.zoomSteps < 0) then 1 else $options.zoomSteps))
@@ -223,20 +239,21 @@
               width: zoomInPx_width + "px"
               height: zoomInPx_height + "px"
 
-            difX = (getData("image").w / 2) - (zoomInPx_width / 2)
-            difY = (getData("image").h / 2) - (zoomInPx_height / 2)
-            newX = ((if difX > 0 then getData("image").posX + Math.abs(difX) else getData("image").posX - Math.abs(difX)))
-            newY = ((if difY > 0 then getData("image").posY + Math.abs(difY) else getData("image").posY - Math.abs(difY)))
+            difX = (imageData.w / 2) - (zoomInPx_width / 2)
+            difY = (imageData.h / 2) - (zoomInPx_height / 2)
+            newX = ((if difX > 0 then imageData.posX + Math.abs(difX) else imageData.posX - Math.abs(difX)))
+            newY = ((if difY > 0 then imageData.posY + Math.abs(difY) else imageData.posY - Math.abs(difY)))
 
-            getData("image").posX = newX
-            getData("image").posY = newY
-            getData("image").w = zoomInPx_width
-            getData("image").h = zoomInPx_height
+            imageData.posX = newX
+            imageData.posY = newY
+            imageData.w = zoomInPx_width
+            imageData.h = zoomInPx_height
 
             calculateFactor()
             calculateTranslationAndRotation()
 
-            $options.image.onZoom $image, getData("image")  if $options.image.onZoom != null
+            $options.image.onZoom $image, imageData  if $options.image.onZoom != null
+
 
         if $options.slidersOrientation == "vertical"
           zoomContainerSlider.append zoomMax
@@ -270,25 +287,27 @@
 
       getPercentOfZoom = ->
         percent = 0
+        imageData = getData 'image'
 
-        if getData("image").w > getData("image").h
-          percent = $options.image.maxZoom - ((getData("image").w * 100) / $options.image.width)
+        if imageData.w > imageData.h
+          percent = $options.image.maxZoom - ((imageData.w * 100) / $options.image.width)
         else
-          percent = $options.image.maxZoom - ((getData("image").h * 100) / $options.image.height)
+          percent = $options.image.maxZoom - ((imageData.h * 100) / $options.image.height)
 
         percent
 
 
       createSelector = ->
+        selectorData = getData 'selector'
         if $options.selector.centered
-          getData("selector").y = ($options.height / 2) - (getData("selector").h / 2)
-          getData("selector").x = ($options.width / 2) - (getData("selector").w / 2)
+          selectorData.y = ($options.height / 2) - (selectorData.h / 2)
+          selectorData.x = ($options.width / 2) - (selectorData.w / 2)
 
         $selector = $("<div/>").attr("id", _self[0].id + "_selector").css(
-          width: getData("selector").w
-          height: getData("selector").h
-          top: getData("selector").y + "px"
-          left: getData("selector").x + "px"
+          width: selectorData.w
+          height: selectorData.h
+          top: selectorData.y + "px"
+          left: selectorData.x + "px"
           border: $options.selector.border
           "border-radius": $options.selector.borderRadius
           position: "absolute"
@@ -308,17 +327,19 @@
             refreshPositions: true
 
             drag: (event, ui) ->
+              selectorData = getData 'selector'
 
               # Update position of the overlay
-              getData("selector").x = ui.position.left
-              getData("selector").y = ui.position.top
+              selectorData.x = ui.position.left
+              selectorData.y = ui.position.top
               makeOverlayPositions ui
               showInfo()
-              $options.selector.onSelectorDrag $selector, getData("selector")  if $options.selector.onSelectorDrag != null
+              $options.selector.onSelectorDrag $selector, selectorData  if $options.selector.onSelectorDrag != null
 
             stop: (event, ui) ->
+              selectorData = getData 'selector'
               hideOverlay()  if $options.selector.hideOverlayOnDragAndResize
-              $options.selector.onSelectorDragStop $selector, getData("selector")  if $options.selector.onSelectorDragStop != null
+              $options.selector.onSelectorDragStop $selector, selectorData  if $options.selector.onSelectorDragStop != null
 
         if $options.selector.resizeable
           $selector.resizable
@@ -330,17 +351,19 @@
             containment: "parent"
 
             resize: (event, ui) ->
+              selectorData = getData 'selector'
 
               # update ovelay position
-              getData("selector").w = $selector.width()
-              getData("selector").h = $selector.height()
+              selectorData.w = $selector.width()
+              selectorData.h = $selector.height()
               makeOverlayPositions ui
               showInfo()
-              $options.selector.onSelectorResize $selector, getData("selector")  if $options.selector.onSelectorResize != null
+              $options.selector.onSelectorResize $selector, selectorData  if $options.selector.onSelectorResize != null
 
             stop: (event, ui) ->
+              selectorData = getData 'selector'
               hideOverlay()  if $options.selector.hideOverlayOnDragAndResize
-              $options.selector.onSelectorResizeStop $selector, getData("selector")  if $options.selector.onSelectorResizeStop != null
+              $options.selector.onSelectorResizeStop $selector, selectorData  if $options.selector.onSelectorResizeStop != null
 
         showInfo $selector  if $options.selector.showInfo
 
@@ -366,16 +389,18 @@
             width: "100%"
           )
 
+        selectorData = getData 'selector'
+
         if $options.selector.showPositionsOnDrag
-          _infoView.html "X:" + Math.round(getData("selector").x) + "px - Y:" + Math.round(getData("selector").y) + "px"
+          _infoView.html "X:" + Math.round(selectorData.x) + "px - Y:" + Math.round(selectorData.y) + "px"
           alreadyAdded = true
 
         if $options.selector.showDimetionsOnDrag
 
           if alreadyAdded
-            _infoView.html _infoView.html() + " | W:" + getData("selector").w + "px - H:" + getData("selector").h + "px"
+            _infoView.html _infoView.html() + " | W:" + selectorData.w + "px - H:" + selectorData.h + "px"
           else
-            _infoView.html "W:" + getData("selector").w + "px - H:" + getData("selector").h + "px"
+            _infoView.html "W:" + selectorData.w + "px - H:" + selectorData.h + "px"
 
         $selector.append _infoView
 
@@ -442,32 +467,33 @@
 
 
       adjustingSizesInRotation = ->
-        angle = getData("image").rotation * Math.PI / 180
+        imageData = getData 'image'
+        angle = imageData.rotation * Math.PI / 180
         sin = Math.sin(angle)
         cos = Math.cos(angle)
 
         # (0,0) stays as (0, 0)
 
         # (w,0) rotation
-        x1 = cos * getData("image").w
-        y1 = sin * getData("image").w
+        x1 = cos * imageData.w
+        y1 = sin * imageData.w
 
         # (0,h) rotation
-        x2 = -sin * getData("image").h
-        y2 = cos * getData("image").h
+        x2 = -sin * imageData.h
+        y2 = cos * imageData.h
 
         # (w,h) rotation
-        x3 = cos * getData("image").w - sin * getData("image").h
-        y3 = sin * getData("image").w + cos * getData("image").h
+        x3 = cos * imageData.w - sin * imageData.h
+        y3 = sin * imageData.w + cos * imageData.h
         minX = Math.min(0, x1, x2, x3)
         maxX = Math.max(0, x1, x2, x3)
         minY = Math.min(0, y1, y2, y3)
         maxY = Math.max(0, y1, y2, y3)
 
-        getData("image").rotW = maxX - minX
-        getData("image").rotH = maxY - minY
-        getData("image").rotY = minY
-        getData("image").rotX = minX
+        imageData.rotW = maxX - minX
+        imageData.rotH = maxY - minY
+        imageData.rotY = minY
+        imageData.rotX = minX
 
 
       createMovementControls = ->
@@ -501,45 +527,46 @@
 
 
       moveImage = (obj) ->
+        imageData = getData 'image'
         if $(obj).hasClass("mvn_no")
-          getData("image").posX = (getData("image").posX - $options.expose.movementSteps)
-          getData("image").posY = (getData("image").posY - $options.expose.movementSteps)
+          imageData.posX = (imageData.posX - $options.expose.movementSteps)
+          imageData.posY = (imageData.posY - $options.expose.movementSteps)
 
         else if $(obj).hasClass("mvn_n")
-          getData("image").posY = (getData("image").posY - $options.expose.movementSteps)
+          imageData.posY = (imageData.posY - $options.expose.movementSteps)
 
         else if $(obj).hasClass("mvn_ne")
-          getData("image").posX = (getData("image").posX + $options.expose.movementSteps)
-          getData("image").posY = (getData("image").posY - $options.expose.movementSteps)
+          imageData.posX = (imageData.posX + $options.expose.movementSteps)
+          imageData.posY = (imageData.posY - $options.expose.movementSteps)
 
         else if $(obj).hasClass("mvn_o")
-          getData("image").posX = (getData("image").posX - $options.expose.movementSteps)
+          imageData.posX = (imageData.posX - $options.expose.movementSteps)
 
         else if $(obj).hasClass("mvn_c")
-          getData("image").posX = ($options.width / 2) - (getData("image").w / 2)
-          getData("image").posY = ($options.height / 2) - (getData("image").h / 2)
+          imageData.posX = ($options.width / 2) - (imageData.w / 2)
+          imageData.posY = ($options.height / 2) - (imageData.h / 2)
 
         else if $(obj).hasClass("mvn_e")
-          getData("image").posX = (getData("image").posX + $options.expose.movementSteps)
+          imageData.posX = (imageData.posX + $options.expose.movementSteps)
 
         else if $(obj).hasClass("mvn_so")
-          getData("image").posX = (getData("image").posX - $options.expose.movementSteps)
-          getData("image").posY = (getData("image").posY + $options.expose.movementSteps)
+          imageData.posX = (imageData.posX - $options.expose.movementSteps)
+          imageData.posY = (imageData.posY + $options.expose.movementSteps)
 
         else if $(obj).hasClass("mvn_s")
-          getData("image").posY = (getData("image").posY + $options.expose.movementSteps)
+          imageData.posY = (imageData.posY + $options.expose.movementSteps)
 
         else if $(obj).hasClass("mvn_se")
-          getData("image").posX = (getData("image").posX + $options.expose.movementSteps)
-          getData("image").posY = (getData("image").posY + $options.expose.movementSteps)
+          imageData.posX = (imageData.posX + $options.expose.movementSteps)
+          imageData.posY = (imageData.posY + $options.expose.movementSteps)
 
         if $options.image.snapToContainer
-          getData("image").posY = 0  if getData("image").posY > 0
-          getData("image").posX = 0  if getData("image").posX > 0
-          bottom = -(getData("image").h - _self.height())
-          right = -(getData("image").w - _self.width())
-          getData("image").posY = bottom  if getData("image").posY < bottom
-          getData("image").posX = right  if getData("image").posX < right
+          imageData.posY = 0  if imageData.posY > 0
+          imageData.posX = 0  if imageData.posX > 0
+          bottom = -(imageData.h - _self.height())
+          right = -(imageData.w - _self.width())
+          imageData.posY = bottom  if imageData.posY < bottom
+          imageData.posX = right  if imageData.posX < right
 
         calculateTranslationAndRotation()
 
@@ -561,8 +588,11 @@
           h: 100
           aspectRatio: false
           centered: false
+          border: null
           borderColor: "yellow"
           borderColorHover: "red"
+          borderHover: null
+          borderRadius: null
           bgInfoLayer: "#FFF"
           draggable: true
           draggableThroughCrop: true
@@ -602,6 +632,7 @@
         enableZoom: true
         zoomSteps: 1
         rotationSteps: 5
+        useRotationButtons: false # false => slider, true => buttons
 
         expose:
           slidersOrientation: "vertical"
@@ -666,12 +697,13 @@
       $image = $("<img>").addClass 'cropzoom-grab'
       $image.attr "src", $options.image.source
 
+      imageData = getData 'image'
       $($image).css
         position: "absolute"
-        left: getData("image").posX
-        top: getData("image").posY
-        width: getData("image").w
-        height: getData("image").h
+        left: imageData.posX
+        top: imageData.posY
+        width: imageData.w
+        height: imageData.h
 
       ext = getExtensionSource()
 
@@ -691,8 +723,9 @@
           $i = $ event.target
           $i.removeClass('cropzoom-grab').addClass 'cropzoom-grabbing'
 
-          getData("image").posY = ui.position.top
-          getData("image").posX = ui.position.left
+          imageData = getData 'image'
+          imageData.posY = ui.position.top
+          imageData.posX = ui.position.left
 
           if $options.image.snapToContainer
             limitBounds ui
